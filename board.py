@@ -116,7 +116,7 @@ class Board:
             Access the piece using its starting position, then update both squares.
         """
         # TODO: Implement board update logic
-        
+
         pass
 
     def undo_move(self, move: Move) -> None:
@@ -192,7 +192,15 @@ class Board:
             Use apply_move() and undo functionality if available.
         """
         # TODO: Filter pseudo-legal moves into legal moves
-        pass
+        legal_moves = self.generate_pseudo_legal_moves()
+        for i in legal_moves:
+            self.apply_move(i)
+            if i == self.in_check:
+                legal_moves.remove(i)
+                self.undo_move(i)
+            else:
+                self.undo_move(i)
+
 
     def is_game_over(self) -> bool:
         """
@@ -217,6 +225,7 @@ class Board:
         legal_moves = self.generate_legal_moves()
         return len(legal_moves) == 0
 
+
     def result(self) -> str:
 
         """
@@ -240,8 +249,11 @@ class Board:
             Use is_game_over() and in_check() to decide.
         """
         # TODO: Determine game result
-        
-        pass
+        if self.is_game_over:
+            if self.in_check:
+                print("<opposite side> wins by checkmate")  
+            else:
+                print("draw by stalemate")
 
     def position_key(self) -> str:
         #Builds a string representation of the board plus side to move.
@@ -323,7 +335,6 @@ class Board:
         dst = parse_square(ending_pos)
         move = Move(src=src, dst=dst, promotion=promotion)
         return move
-        # TODO: Parse input into move coordinates
 
     def play_move_text(self, text: str) -> Move:
         #Parse move, apply, return move
