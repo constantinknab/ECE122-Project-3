@@ -163,10 +163,10 @@ class Board:
         moves: List[Move] = []
         for r in range(8):
             for c in range(8):
-            piece = self.grid[r][c]
-            if piece is not None and piece.color == self.turn:
-                    moves.extend(piece.pseudo_legal_moves(self, r, c))
-        return moves
+                piece = self.grid[r][c]
+                if piece is not None and piece.color == self.turn:
+                        moves.extend(piece.pseudo_legal_moves(self, r, c))
+            return moves
 
     def generate_legal_moves(self) -> List[Move]:
         """
