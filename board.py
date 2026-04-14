@@ -200,6 +200,7 @@ class Board:
                 self.undo_move(i)
             else:
                 self.undo_move(i)
+        return legal_moves
 
 
     def is_game_over(self) -> bool:
