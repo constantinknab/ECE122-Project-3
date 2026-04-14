@@ -160,7 +160,7 @@ class Evaluator:
         """
         # TODO: Implement board evaluation
         score = self.white_score(board)
-        if board.turn == "w":
+        if self.turn == "w":
             return score
         else:            
             return -score

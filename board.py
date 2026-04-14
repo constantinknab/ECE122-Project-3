@@ -163,8 +163,8 @@ class Board:
         moves: List[Move] = []
         for r in range(8):
             for c in range(8):
-                piece = self.grid[r][c]
-                if piece is not None and piece.color == self.turn:
+            piece = self.grid[r][c]
+            if piece is not None and piece.color == self.turn:
                     moves.extend(piece.pseudo_legal_moves(self, r, c))
         return moves
 
@@ -251,9 +251,9 @@ class Board:
         # TODO: Determine game result
         if self.is_game_over:
             if self.in_check:
-                print("<opposite side> wins by checkmate")  
+                return f"{self.turn} wins by checkmate"
             else:
-                print("draw by stalemate")
+                return "draw by stalemate"
 
     def position_key(self) -> str:
         #Builds a string representation of the board plus side to move.
