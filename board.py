@@ -116,6 +116,7 @@ class Board:
             Access the piece using its starting position, then update both squares.
         """
         # TODO: Implement board update logic
+        
         pass
 
     def undo_move(self, move: Move) -> None:
@@ -159,7 +160,13 @@ class Board:
             Check piece color before generating moves.
         """
         # TODO: Collect moves from all pieces
-        pass
+        moves: List[Move] = []
+        for r in range(8):
+            for c in range(8):
+                piece = self.grid[r][c]
+                if piece is not None and piece.color == self.turn:
+                    moves.extend(piece.pseudo_legal_moves(self, r, c))
+        return moves
 
     def generate_legal_moves(self) -> List[Move]:
         """
@@ -207,7 +214,8 @@ class Board:
             Check if there are no legal moves
         """
         # TODO: Implement game-ending condition
-        pass
+        legal_moves = self.generate_legal_moves()
+        return len(legal_moves) == 0
 
     def result(self) -> str:
 
@@ -232,6 +240,7 @@ class Board:
             Use is_game_over() and in_check() to decide.
         """
         # TODO: Determine game result
+        
         pass
 
     def position_key(self) -> str:
@@ -307,8 +316,14 @@ class Board:
         Hint:
             Carefully map chess notation to array indices.
         """
+        starting_pos = text[:2]
+        ending_pos = text[2:4]
+        promotion = text[4] if len(text) > 4 else None
+        src = parse_square(starting_pos)
+        dst = parse_square(ending_pos)
+        move = Move(src=src, dst=dst, promotion=promotion)
+        return move
         # TODO: Parse input into move coordinates
-        pass
 
     def play_move_text(self, text: str) -> Move:
         #Parse move, apply, return move

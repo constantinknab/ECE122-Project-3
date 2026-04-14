@@ -159,4 +159,8 @@ class Evaluator:
             Use white_score(board), then adjust the sign based on whose turn it is.
         """
         # TODO: Implement board evaluation
-        pass
+        score = self.white_score(board)
+        if board.turn == "w":
+            return score
+        else:            
+            return -score

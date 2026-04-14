@@ -114,7 +114,8 @@ class Piece:
             Use a loop to continue stepping in each direction.
         """
         # TODO: Implement sliding movement logic
-        pass
+
+    pass
 
     def _step_moves(self, board: "Board", r: int, c: int, deltas: List[Tuple[int, int]]) -> List[Move]:
 
@@ -189,7 +190,7 @@ class Pawn(Piece):
             Check forward square and diagonal squares separately.
         """
         # TODO: Implement pawn movement logic
-        pass
+    pass
 
 #Same template now for rest
 class Knight(Piece):
@@ -221,7 +222,7 @@ class Knight(Piece):
             Use a predefined list of 8 possible moves.
         """
         # TODO: Implement knight movement logic using step moves
-        pass
+    pass
 
 
 class Bishop(Piece):
@@ -259,7 +260,7 @@ class Rook(Piece):
             Call the sliding move helper with the correct directions.
         """
         # TODO: Implement rook movement using sliding moves
-        pass
+    pass
 
 
 
