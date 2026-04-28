@@ -92,6 +92,7 @@ class Piece:
     def _slide_moves(self, board: "Board", r: int, c: int, dirs: List[Tuple[int, int]]) -> List[Move]:
         """
         Generate moves for pieces that move continuously in a direction (sliding pieces).
+        Helper method used by Bishop, Rook, and Queen.
 
         Parameters:
             board: the current board object
@@ -111,25 +112,32 @@ class Piece:
             - If it has your own piece -> STOP immediately (do not add move)
             - Do not modify the board
 
+        Reasoning:
+            Sliding pieces (Bishop, Rook, Queen) move in straight lines along their allowed
+            directions. We iterate through each direction and keep stepping until we hit a
+            boundary or a piece. Captures are recorded but terminate the slide in that direction.
+
         Hint:
             Use a loop to continue stepping in each direction.
         """
-        # TODO: Implement sliding movement logic
         moves = []
+        # For each direction the piece can move (e.g., diagonals for bishops, straight lines for rooks)
         for dr, dc in dirs:
             nr, nc = r + dr, c + dc
+            # Keep sliding in this direction until we go out of bounds or hit a piece
             while in_bounds(nr, nc):
                 target_piece = board.grid[nr][nc]
                 if target_piece is None:
-                    # Empty square, add move and continue sliding
+                    # Empty square: add move and continue sliding in this direction
                     moves.append(Move(src=(r, c), dst=(nr, nc)))
                 elif target_piece.color != self.color:
-                    # Enemy piece, add move and stop sliding
+                    # Enemy piece: add capture move and stop sliding (cannot go past capture)
                     moves.append(Move(src=(r, c), dst=(nr, nc), captured_piece=target_piece))
                     break
                 else:
-                    # Own piece, stop sliding without adding move
+                    # Own piece: cannot capture friendly piece, stop immediately without adding
                     break
+                # Move one step further in the current direction
                 nr += dr
                 nc += dc
         return moves
@@ -138,6 +146,7 @@ class Piece:
 
         """
         Generate moves for pieces that move a fixed distance (one step per direction).
+        Helper method used by King and Knight (though Knight uses different logic).
 
         Parameters:
             board: the current board object (used to check positions and pieces)
@@ -156,15 +165,23 @@ class Piece:
             - If the destination has your own piece -> do NOT add the move.
             - Do not modify the board.
 
+        Reasoning:
+            Unlike sliding pieces, kings and knights have fixed move patterns. A king can move
+            one square in any direction (8 possible moves), and knights move in L-shapes.
+            We simply check each possible destination without continuing in any direction.
+            This differs from sliding moves which continue until blocked.
+
         Hint:
             Loop through each (dr, dc) in steps and check the resulting square.
         """
-        # TODO: Implement step-based movement logic
         moves = []
+        # For each possible destination (fixed set of moves, not sliding)
         for dr, dc in deltas:
             nr, nc = r + dr, c + dc
+            # Check if destination is within board bounds
             if in_bounds(nr, nc):
                 target_piece = board.grid[nr][nc]
+                # Can move to empty squares or capture enemy pieces
                 if target_piece is None or target_piece.color != self.color:
                     moves.append(Move(src=(r, c), dst=(nr, nc)))
         return moves
@@ -180,13 +197,14 @@ class Piece:
 
 
 class Pawn(Piece):
-    #Pawn behavior
+    """Pawn piece: the most numerous but least powerful piece. Moves forward, captures diagonally."""
     kind = "P"
-    value = 100 #Worth 100 in ealuation function
+    value = 100 #Worth 100 in evaluation function
 
     def pseudo_legal_moves(self, board: "Board", r: int, c: int) -> List[Move]:
         """
         Generate all pseudo-legal moves for a pawn.
+        Pawns have special movement rules: they move forward but capture diagonally.
 
         Parameters:
             board: the current board object
@@ -210,57 +228,73 @@ class Pawn(Piece):
             - Do NOT allow moving off the board
             - Do NOT modify the board
 
+        Reasoning:
+            Pawns are unique: they move forward one square (or two from start) but capture
+            diagonally. We handle color-specific direction, check for promotion (when reaching
+            the opposite end), and generate all possible moves including promotion variants.
+            Pawns are pseudo-legal here because we don't check if moving would expose the king.
+
         Hint:
             Check forward square and diagonal squares separately.
         """
-        # TODO: Implement pawn movement logic
+        # Determine direction and starting position based on pawn color
         if self.color == "w":
+            # White pawns move upward (decreasing row index)
             forward = (r - 1, c)
             double_forward = (r - 2, c)
             captures = [(r - 1, c - 1), (r - 1, c + 1)]
-            start_row = 6
-            promo_row = 0
+            start_row = 6  # White pawns start on row 6
+            promo_row = 0  # Promote when reaching row 0 (rank 8)
         else:
+            # Black pawns move downward (increasing row index)
             forward = (r + 1, c)
             double_forward = (r + 2, c)
             captures = [(r + 1, c - 1), (r + 1, c + 1)]
-            start_row = 1
-            promo_row = 7
+            start_row = 1  # Black pawns start on row 1
+            promo_row = 7  # Promote when reaching row 7 (rank 1)
+        
         moves = []
-        # Forward move
+        
+        # Forward pawn move: one square ahead if empty
         if in_bounds(*forward) and board.grid[forward[0]][forward[1]] is None:
             if forward[0] == promo_row:
-                # Promotion moves
+                # Pawn reaching promotion rank: generate 4 moves (promote to q, r, b, n)
                 for promo in "qrbn":
                     moves.append(Move(src=(r, c), dst=forward, promotion=promo))
             else:
+                # Regular forward move
                 moves.append(Move(src=(r, c), dst=forward))
-            # Double forward move
+            
+            # Double forward move: two squares from starting position if both squares empty
             if r == start_row and in_bounds(*double_forward) and board.grid[double_forward[0]][double_forward[1]] is None:
                 moves.append(Move(src=(r, c), dst=double_forward))
 
-        # Capture moves
+        # Diagonal pawn captures: can capture diagonally forward if enemy piece present
         for cap in captures:
             if in_bounds(*cap):
                 target_piece = board.grid[cap[0]][cap[1]]
+                # Can only capture if there's an enemy piece on the diagonal
                 if target_piece is not None and target_piece.color != self.color:
                     if cap[0] == promo_row:
-                        # Promotion captures
+                        # Capture with promotion: 4 variants
                         for promo in "qrbn":
                             moves.append(Move(src=(r, c), dst=cap, promotion=promo))
                     else:
+                        # Regular capture
                         moves.append(Move(src=(r, c), dst=cap))
 
         return moves
 
 #Same template now for rest
 class Knight(Piece):
+    """Knight piece: moves in L-shaped patterns (2 squares + 1 square perpendicular)."""
     kind = "N"
     value = 320
 
     def pseudo_legal_moves(self, board: "Board", r: int, c: int) -> List[Move]:
         """
         Generate all pseudo-legal moves for a knight.
+        Knights have a unique movement pattern compared to other pieces.
 
         Parameters:
             board: the current board object
@@ -279,40 +313,56 @@ class Knight(Piece):
             - If destination has own piece → do NOT add
             - Must stay within board bounds
 
+        Reasoning:
+            Knights move in a fixed L-shaped pattern (2 squares in one direction, 1 in
+            perpendicular) and can jump over other pieces. There are exactly 8 possible
+            destination squares from any given position. We check each without sliding.
+            This unique jumping ability makes knights very useful for tactics.
+
         Hint:
             Use a predefined list of 8 possible moves.
         """
-        # TODO: Implement knight movement logic using step moves
+        # All 8 possible L-shaped moves a knight can make
         knight_moves = [
-            (r - 2, c - 1), (r - 2, c + 1),
-            (r - 1, c - 2), (r - 1, c + 2),
-            (r + 1, c - 2), (r + 1, c + 2),
-            (r + 2, c - 1), (r + 2, c + 1),
+            (r - 2, c - 1), (r - 2, c + 1),  # 2 up, 1 left/right
+            (r - 1, c - 2), (r - 1, c + 2),  # 1 up, 2 left/right
+            (r + 1, c - 2), (r + 1, c + 2),  # 1 down, 2 left/right
+            (r + 2, c - 1), (r + 2, c + 1),  # 2 down, 1 left/right
         ]
+        
         moves = []
+        # Check each possible knight move
         for move in knight_moves:
             if in_bounds(*move):
                 target_piece = board.grid[move[0]][move[1]]
+                # Can move to empty squares or capture enemy pieces
                 if target_piece is None or target_piece.color != self.color:
                     moves.append(Move(src=(r, c), dst=move))
+        
         return moves 
 
 
 class Bishop(Piece):
+    """Bishop piece: moves diagonally any number of squares."""
     kind = "B"
     value = 330
 
     def pseudo_legal_moves(self, board: "Board", r: int, c: int) -> List[Move]:
+        """Generate all pseudo-legal moves for a bishop using diagonal sliding."""
+        # Use the sliding move helper with the 4 diagonal directions
+        # (-1, -1) = up-left, (-1, 1) = up-right, (1, -1) = down-left, (1, 1) = down-right
         return self._slide_moves(board, r, c, [(-1, -1), (-1, 1), (1, -1), (1, 1)])
 
 
 class Rook(Piece):
+    """Rook piece: moves horizontally or vertically any number of squares."""
     kind = "R"
     value = 500
 
     def pseudo_legal_moves(self, board: "Board", r: int, c: int) -> List[Move]:
         """
         Generate all pseudo-legal moves for a rook.
+        Rooks move in straight lines (orthogonally) and are among the most mobile pieces.
 
         Parameters:
             board: the current board object
@@ -329,35 +379,56 @@ class Rook(Piece):
             - Use sliding movement logic
             - Do not modify the board
 
+        Reasoning:
+            Rooks are sliding pieces that move orthogonally (4 directions: up, down, left, right).
+            We delegate to the _slide_moves helper with the four orthogonal directions.
+            The helper handles sliding until blocked and capture logic. Rooks are very powerful
+            pieces and are worth about 5 pawns in material value.
+
         Hint:
             Call the sliding move helper with the correct directions.
         """
-        # TODO: Implement rook movement using sliding moves
+        # Use the sliding move helper with the 4 orthogonal directions
+        # (-1, 0) = up, (1, 0) = down, (0, -1) = left, (0, 1) = right
         pseudo_moves = self._slide_moves(board, r, c, [(-1, 0), (1, 0), (0, -1), (0, 1)])
         return pseudo_moves
 
 
 
 class Queen(Piece):
+    """Queen piece: combines rook and bishop, moving horizontally, vertically, or diagonally."""
     kind = "Q"
     value = 900
 
     def pseudo_legal_moves(self, board: "Board", r: int, c: int) -> List[Move]:
+        """
+        Generate all pseudo-legal moves for a queen using both diagonal and orthogonal sliding.
+        The queen is the most powerful piece, combining rook and bishop movement.
+        """
+        # Use the sliding move helper with all 8 directions (4 diagonals + 4 orthogonal)
+        # This makes the queen one of the most powerful pieces on the board
         return self._slide_moves(board, r, c, [
-            (-1, -1), (-1, 1), (1, -1), (1, 1),
-            (-1, 0), (1, 0), (0, -1), (0, 1),
+            (-1, -1), (-1, 1), (1, -1), (1, 1),  # Diagonals (like bishop)
+            (-1, 0), (1, 0), (0, -1), (0, 1),    # Orthogonal (like rook)
         ])
 
 
 class King(Piece):
+    """King piece: moves one square in any direction. Most important piece in chess."""
     kind = "K"
     value = 20000
 
     def pseudo_legal_moves(self, board: "Board", r: int, c: int) -> List[Move]:
+        """
+        Generate all pseudo-legal moves for a king (one square in any direction).
+        The king is the most important piece - if it's checkmated, you lose.
+        """
+        # Use the step move helper with all 8 surrounding squares
+        # Kings move one square per turn but can attack in all directions
         return self._step_moves(board, r, c, [
-            (-1, -1), (-1, 0), (-1, 1),
-            (0, -1),           (0, 1),
-            (1, -1),  (1, 0),  (1, 1),
+            (-1, -1), (-1, 0), (-1, 1),  # Up row (left, center, right)
+            (0, -1),           (0, 1),   # Same row (left, right)
+            (1, -1),  (1, 0),  (1, 1),   # Down row (left, center, right)
         ])
 
 #Maps piece symbol to class
