@@ -115,10 +115,24 @@ class Piece:
             Use a loop to continue stepping in each direction.
         """
         # TODO: Implement sliding movement logic
-        for move in dirs:
-                if move == (r, c):
-                    return True
-        return False
+        moves = []
+        for dr, dc in dirs:
+            nr, nc = r + dr, c + dc
+            while in_bounds(nr, nc):
+                target_piece = board.grid[nr][nc]
+                if target_piece is None:
+                    # Empty square, add move and continue sliding
+                    moves.append(Move(src=(r, c), dst=(nr, nc)))
+                elif target_piece.color != self.color:
+                    # Enemy piece, add move and stop sliding
+                    moves.append(Move(src=(r, c), dst=(nr, nc), captured_piece=target_piece))
+                    break
+                else:
+                    # Own piece, stop sliding without adding move
+                    break
+                nr += dr
+                nc += dc
+        return moves
 
     def _step_moves(self, board: "Board", r: int, c: int, deltas: List[Tuple[int, int]]) -> List[Move]:
 
