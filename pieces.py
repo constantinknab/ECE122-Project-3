@@ -3,6 +3,8 @@ moves, the piece base class, the individual piece types.
 """
 
 from __future__ import annotations
+
+import board
 """This delays evaluation of type hints until runtime is finished. 
 It is useful because later in the file, Move refers to Piece, and 
 Piece refers to Board, if you don't have this, it'd create forward-reference issues.
@@ -24,7 +26,6 @@ Square = Tuple[int, int]#Defines a square as a pair of integers (row, col).
 
 def in_bounds(r: int, c: int) -> bool:
     #Checks whether a coordinate is on the 8×8 board.
-
     return 0 <= r < 8 and 0 <= c < 8
 
 
@@ -114,8 +115,10 @@ class Piece:
             Use a loop to continue stepping in each direction.
         """
         # TODO: Implement sliding movement logic
-
-    pass
+        for move in dirs:
+                if move == (r, c):
+                    return True
+        return False
 
     def _step_moves(self, board: "Board", r: int, c: int, deltas: List[Tuple[int, int]]) -> List[Move]:
 
@@ -143,7 +146,10 @@ class Piece:
             Loop through each (dr, dc) in steps and check the resulting square.
         """
         # TODO: Implement step-based movement logic
-        pass
+        for move in deltas:
+                if move == (r, c):
+                    return True
+        return False
        
 
     def pseudo_legal_moves(self, board: "Board", r: int, c: int) -> List[Move]:
@@ -190,7 +196,32 @@ class Pawn(Piece):
             Check forward square and diagonal squares separately.
         """
         # TODO: Implement pawn movement logic
-    pass
+        board.grid[r][c]
+        if self.color == "w":
+            forward = (r - 1, c)
+            double_forward = (r - 2, c)
+            captures = [(r - 1, c - 1), (r - 1, c + 1)]
+            start_row = 6
+        else:
+            forward = (r + 1, c)
+            double_forward = (r + 2, c)
+            captures = [(r + 1, c - 1), (r + 1, c + 1)]
+            start_row = 1
+        moves = []
+        # Forward move
+        if in_bounds(*forward) and board.grid[forward[0]][forward[1]]
+            is None:
+            moves.append(Move(src=(r, c), dst=forward))
+            # Double forward move
+            if r == start_row and in_bounds(*double_forward) and board.grid[double_forward[0]][double_forward[1]] is None:
+                moves.append(Move(src=(r, c), dst=double_forward))
+        # Capture moves
+        for cap in captures:
+            if in_bounds(*cap):
+                target_piece = board.grid[cap[0]][cap[1]]
+                if target_piece is not None and target_piece.color != self.color:
+                    moves.append(Move(src=(r, c), dst=cap))
+        return moves
 
 #Same template now for rest
 class Knight(Piece):
