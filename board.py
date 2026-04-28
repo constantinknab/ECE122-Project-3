@@ -116,8 +116,34 @@ class Board:
             Access the piece using its starting position, then update both squares.
         """
         # TODO: Implement board update logic
-
-        pass
+        sr, sc = move.src
+        dr, dc = move.dst
+        
+        # Store move information for undo
+        move.moved_piece = self.grid[sr][sc]
+        move.captured_piece = self.grid[dr][dc]
+        move.prev_turn = self.turn
+        
+        # Move the piece
+        self.grid[dr][dc] = self.grid[sr][sc]
+        self.grid[sr][sc] = None
+        
+        # Handle promotion
+        if move.promotion:
+            if move.promotion == 'q':
+                self.grid[dr][dc] = Queen(self.turn)
+            elif move.promotion == 'r':
+                self.grid[dr][dc] = Rook(self.turn)
+            elif move.promotion == 'b':
+                self.grid[dr][dc] = Bishop(self.turn)
+            elif move.promotion == 'n':
+                self.grid[dr][dc] = Knight(self.turn)
+        
+        # Switch turn
+        self.turn = self.opposite(self.turn)
+        
+        # Add to history
+        self.history.append(move)
 
     def undo_move(self, move: Move) -> None:
         #Restores moving piece to source, capture piece to dest, previous turn
@@ -165,8 +191,8 @@ class Board:
             for c in range(8):
                 piece = self.grid[r][c]
                 if piece is not None and piece.color == self.turn:
-                        moves.extend(piece.pseudo_legal_moves(self, r, c))
-            return moves
+                    moves.extend(piece.pseudo_legal_moves(self, r, c))
+        return moves
 
     def generate_legal_moves(self) -> List[Move]:
         """
@@ -192,14 +218,13 @@ class Board:
             Use apply_move() and undo functionality if available.
         """
         # TODO: Filter pseudo-legal moves into legal moves
-        legal_moves = self.generate_pseudo_legal_moves()
-        for i in legal_moves:
-            self.apply_move(i)
-            if i == self.in_check:
-                legal_moves.remove(i)
-                self.undo_move(i)
-            else:
-                self.undo_move(i)
+        pseudo_legal = self.generate_pseudo_legal_moves()
+        legal_moves = []
+        for move in pseudo_legal:
+            self.apply_move(move)
+            if not self.in_check(self.opposite(self.turn)):
+                legal_moves.append(move)
+            self.undo_move(move)
         return legal_moves
 
 
@@ -250,11 +275,11 @@ class Board:
             Use is_game_over() and in_check() to decide.
         """
         # TODO: Determine game result
-        if self.is_game_over:
-            if self.in_check:
-                return f"{self.turn} wins by checkmate"
-            else:
-                return "draw by stalemate"
+        if not self.is_game_over():
+            return "ongoing"
+        if self.in_check(self.turn):
+            return f"{'Black' if self.turn == 'w' else 'White'} wins by checkmate"
+        return "draw by stalemate"
 
     def position_key(self) -> str:
         #Builds a string representation of the board plus side to move.
@@ -340,5 +365,10 @@ class Board:
     def play_move_text(self, text: str) -> Move:
         #Parse move, apply, return move
         move = self.try_parse_move(text)
-        self.apply_move(move)
-        return move
+        legal_moves = self.generate_legal_moves()
+        # Check if the move is in legal moves
+        for legal_move in legal_moves:
+            if legal_move.src == move.src and legal_move.dst == move.dst and legal_move.promotion == move.promotion:
+                self.apply_move(legal_move)
+                return legal_move
+        raise ValueError(f"Illegal move: {move.uci()}")
