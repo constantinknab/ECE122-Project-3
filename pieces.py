@@ -90,7 +90,7 @@ class Piece:
         return type(self)(self.color)
 
     def _slide_moves(self, board: "Board", r: int, c: int, dirs: List[Tuple[int, int]]) -> List[Move]:
-       """
+        """
         Generate moves for pieces that move continuously in a direction (sliding pieces).
 
         Parameters:
@@ -167,7 +167,7 @@ class Pawn(Piece):
     value = 100 #Worth 100 in ealuation function
 
     def pseudo_legal_moves(self, board: "Board", r: int, c: int) -> List[Move]:
-                """
+        """
         Generate all pseudo-legal moves for a pawn.
 
         Parameters:
@@ -197,7 +197,7 @@ class Pawn(Piece):
         """
         # TODO: Implement pawn movement logic
         board.grid[r][c]
-        if self.color == "w":
+        if super().color == "w":
             forward = (r - 1, c)
             double_forward = (r - 2, c)
             captures = [(r - 1, c - 1), (r - 1, c + 1)]
@@ -209,18 +209,19 @@ class Pawn(Piece):
             start_row = 1
         moves = []
         # Forward move
-        if in_bounds(*forward) and board.grid[forward[0]][forward[1]]
-            is None:
+        if in_bounds(*forward) and board.grid[forward[0]][forward[1]] == None:
             moves.append(Move(src=(r, c), dst=forward))
             # Double forward move
             if r == start_row and in_bounds(*double_forward) and board.grid[double_forward[0]][double_forward[1]] is None:
                 moves.append(Move(src=(r, c), dst=double_forward))
+
         # Capture moves
         for cap in captures:
             if in_bounds(*cap):
                 target_piece = board.grid[cap[0]][cap[1]]
                 if target_piece is not None and target_piece.color != self.color:
                     moves.append(Move(src=(r, c), dst=cap))
+
         return moves
 
 #Same template now for rest
@@ -229,7 +230,7 @@ class Knight(Piece):
     value = 320
 
     def pseudo_legal_moves(self, board: "Board", r: int, c: int) -> List[Move]:
-                """
+        """
         Generate all pseudo-legal moves for a knight.
 
         Parameters:
@@ -253,7 +254,19 @@ class Knight(Piece):
             Use a predefined list of 8 possible moves.
         """
         # TODO: Implement knight movement logic using step moves
-    pass
+        knight_moves = [
+            (r - 2, c - 1), (r - 2, c + 1),
+            (r - 1, c - 2), (r - 1, c + 2),
+            (r + 1, c - 2), (r + 1, c + 2),
+            (r + 2, c - 1), (r + 2, c + 1),
+        ]
+        moves = []
+        for move in knight_moves:
+            if in_bounds(*move):
+                target_piece = board.grid[move[0]][move[1]]
+                if target_piece is None or target_piece.color != self.color:
+                    moves.append(Move(src=(r, c), dst=move))
+        return moves 
 
 
 class Bishop(Piece):
@@ -269,7 +282,7 @@ class Rook(Piece):
     value = 500
 
     def pseudo_legal_moves(self, board: "Board", r: int, c: int) -> List[Move]:
-         """
+        """
         Generate all pseudo-legal moves for a rook.
 
         Parameters:
@@ -291,9 +304,8 @@ class Rook(Piece):
             Call the sliding move helper with the correct directions.
         """
         # TODO: Implement rook movement using sliding moves
-        pseudo_moves = self._slide_moves(board, r, c, [(-1, 0), (1, 0), (0, -1), (0, 1)])  
-        
-    pass
+        pseudo_moves = self._slide_moves(board, r, c, [(-1, 0), (1, 0), (0, -1), (0, 1)])
+        return pseudo_moves
 
 
 
