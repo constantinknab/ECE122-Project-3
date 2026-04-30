@@ -1,5 +1,5 @@
 from __future__ import annotations
-#File implements decision makinh
+#File implements decision making
 import math # For infinity
 import time # For optional time limits
 from dataclasses import dataclass #Transposition table entries
