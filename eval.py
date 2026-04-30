@@ -1,3 +1,11 @@
+"""
+ECE 122: Project 3
+Sean Graziano
+Spire ID: 35297651
+Constanin Knab
+Spire ID: 35452627
+"""
+
 #Used to evaluate board pos numerically
 from __future__ import annotations
 
@@ -82,7 +90,7 @@ KING_TABLE = [
 
 #Engine
 class Evaluator:
-    def __init__(self):
+    def __init__(self):     # Initialize the evaluator with piece values and piece-square tables
         #Lookup tab;e
         self.tables = {
             "P": PAWN_TABLE,
@@ -93,46 +101,46 @@ class Evaluator:
             "K": KING_TABLE,
         }
 #Positional bonus for piece on specific square
-    def _table_bonus(self, kind: str, color: str, r: int, c: int) -> int:
-        table = self.tables[kind]
+    def _table_bonus(self, kind: str, color: str, r: int, c: int) -> int: # Get the positional bonus for a piece of a given kind and color on a specific square (r, c)
+        table = self.tables[kind]                                         # Look up the piece-square table for the given piece kind
         if color == "w":
-            return table[r][c]
-        return table[7 - r][c]
+            return table[r][c]                                            # For white pieces, use the table directly with the given row index                 
+        return table[7 - r][c]                                            # For black pieces, use the table with a vertically mirrored row index
 #white uses table directly, black uses vertically mirrored row index
 
 #Computes score from white's pov:
-#Loops over all squares, adds piece values+pos bonus for white piece
+#Loops over all squares, adds piece values+pos bonus for white pieces
 #Subtracts piece vals+pos bonus for black pieces
 #Adds mobility bonus based on legal move counts
 #Adds subs check penalty
-    def white_score(self, board: Board) -> int:
+    def white_score(self, board: Board) -> int:     # Compute the score of the board position from white's perspective
         score = 0
         for r in range(8):
             for c in range(8):
                 piece = board.grid[r][c]
                 if piece is None:
                     continue
-                bonus = self._table_bonus(piece.kind, piece.color, r, c)
+                bonus = self._table_bonus(piece.kind, piece.color, r, c)    # Get the positional bonus for the piece on its current square
                 if piece.color == "w":
-                    score += PIECE_VALUES[piece.kind] + bonus
+                    score += PIECE_VALUES[piece.kind] + bonus               # If the piece is white, add its value and positional bonus to the score since it's an advantage for white
                 else:
-                    score -= PIECE_VALUES[piece.kind] + bonus
+                    score -= PIECE_VALUES[piece.kind] + bonus               # If the piece is black, subtract its value and positional bonus from the score since it's a disadvantage for white
 
         # Mobility bonus
         current_turn = board.turn
         try:
             board.turn = "w"
-            white_mobility = len(board.generate_legal_moves())
-            board.turn = "b"
-            black_mobility = len(board.generate_legal_moves())
-        finally:
+            white_mobility = len(board.generate_legal_moves())  # Generate legal moves for white and count them to calculate white's mobility
+            board.turn = "b"    # Temporarily set the turn to black to
+            black_mobility = len(board.generate_legal_moves())  # Generate legal moves for black and count them to calculate
+        finally:                
             board.turn = current_turn
 
         score += 2 * (white_mobility - black_mobility)
 
-        if board.in_check("w"):
+        if board.in_check("w"):     # If white is in check, subtract a penalty from the score since it's a disadvantage for white
             score -= 30
-        if board.in_check("b"):
+        if board.in_check("b"):     # If black is in check, add a bonus to the score since it's an advantage for white
             score += 30
 
         return score
@@ -159,8 +167,8 @@ class Evaluator:
             Use white_score(board), then adjust the sign based on whose turn it is.
         """
         # TODO: Implement board evaluation
-        score = self.white_score(board)
-        if board.turn == "w":
+        score = self.white_score(board)     # Compute the score from white's perspective using the white_score method
+        if board.turn == "w":               # If it's white's turn, return the score as is since it's already from white's perspective
             return score
         else:            
             return -score
