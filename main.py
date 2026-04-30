@@ -1,3 +1,8 @@
+from __future__ import annotations
+
+from board import Board
+from io_utils import load_position, save_moves, save_position
+from search import Searcher
 """
 This essentially the command line controller;
 it doesn't create chess rules itself but connects to Boards, Searcher,
@@ -9,11 +14,6 @@ undo or logging. When it is engine's turn to play, main.py will ask
 Searcher.find_best_move() for a move and then applies that move to the same Board object.
 """
 
-from __future__ import annotations
-
-from board import Board
-from io_utils import load_position, save_moves, save_position
-from search import Searcher
 
 #Command help to show all the commands
 HELP = """Commands:
