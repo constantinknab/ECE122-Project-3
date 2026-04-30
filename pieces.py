@@ -1,3 +1,11 @@
+"""
+ECE 122: Project 3
+Sean Graziano
+Spire ID: 35297651
+Constanin Knab
+Spire ID: 35452627
+"""
+
 """This file is used to define the basic chess concepts, squares, 
 moves, the piece base class, the individual piece types.
 """
@@ -37,25 +45,25 @@ def square_name(r: int, c: int) -> str:
 def parse_square(text: str) -> Square:
     #Converts notation like "e2" into internal coordinates
 
-    text = text.strip().lower()
-    if len(text) != 2:
+    text = text.strip().lower() #Removes any extra spaces and makes the input lowercase
+    if len(text) != 2:          #Ensures the input is exactly two characters
         raise ValueError(f"Invalid square: {text}")
-    file_ch, rank_ch = text[0], text[1]
+    file_ch, rank_ch = text[0], text[1]     #Splits the input
     if file_ch < "a" or file_ch > "h" or rank_ch < "1" or rank_ch > "8":
         raise ValueError(f"Invalid square: {text}")
-    c = ord(file_ch) - ord("a")
+    c = ord(file_ch) - ord("a")  #Converts the letter to a column index
     r = 8 - int(rank_ch)
-    return r, c
+    return r, c  #Returns the position as (row, column).
 
 
 @dataclass
 class Move:
-    src: Square#Starting square
-    dst: Square#Ending square
-    promotion: Optional[str] = None#Promotion
-    moved_piece: Optional["Piece"] = None#Moved piece
-    captured_piece: Optional["Piece"] = None#Captured piece
-    prev_turn: Optional[str] = None#Turn before the move, for undo
+    src: Square                              #Starting square
+    dst: Square                              #Ending square
+    promotion: Optional[str] = None          #Promotion
+    moved_piece: Optional["Piece"] = None    #Moved piece
+    captured_piece: Optional["Piece"] = None #Captured piece
+    prev_turn: Optional[str] = None          #Turn before the move, for undo
 
     def uci(self) -> str:
         #Returns the move in coordinate format like e2e4 or e7e8q.
@@ -125,9 +133,9 @@ class Piece:
         for dr, dc in dirs:
             nr, nc = r + dr, c + dc
             # Keep sliding in this direction until we go out of bounds or hit a piece
-            while in_bounds(nr, nc):
-                target_piece = board.grid[nr][nc]
-                if target_piece is None:
+            while in_bounds(nr, nc):              # keep moving in this direction while still on the board
+                target_piece = board.grid[nr][nc]  # get the piece (if any) at the current square
+                if target_piece is None:           # if the square is empty
                     # Empty square: add move and continue sliding in this direction
                     moves.append(Move(src=(r, c), dst=(nr, nc)))
                 elif target_piece.color != self.color:
@@ -247,8 +255,8 @@ class Pawn(Piece):
             promo_row = 0  # Promote when reaching row 0 (rank 8)
         else:
             # Black pawns move downward (increasing row index)
-            forward = (r + 1, c)
-            double_forward = (r + 2, c)
+            forward = (r + 1, c)          # one square forward from current position (row increases by 1)
+            double_forward = (r + 2, c)   # two squares forward from current position (used for pawn's first move)      
             captures = [(r + 1, c - 1), (r + 1, c + 1)]
             start_row = 1  # Black pawns start on row 1
             promo_row = 7  # Promote when reaching row 7 (rank 1)
@@ -441,16 +449,18 @@ PIECE_MAP = {
     "k": King,
 }
 
-#Converts char from text board file into a piece object/None
+# Converts a single character from a text-based board into a Piece object (or None)
 def piece_from_symbol(ch: str) -> Optional[Piece]:
-    if ch == ".":
-        return None
+    if ch == ".":                 # "." represents an empty square on the board
+        return None               # return None since there is no piece
+    # Validate input: must be a single character and a valid piece symbol
     if len(ch) != 1 or ch.lower() not in PIECE_MAP:
-        raise ValueError(f"Unknown piece symbol: {ch}")
-    cls = PIECE_MAP[ch.lower()]
+        raise ValueError(f"Unknown piece symbol: {ch}")  # raise error if invalid
+    cls = PIECE_MAP[ch.lower()]   # get the piece class (e.g., Pawn, Knight) from the map
+    # Determine color: uppercase = white, lowercase = black
     color = "w" if ch.isupper() else "b"
-    return cls(color)
+    return cls(color)             # create and return the piece instance with its color
 
 #Other way round.
 def symbol_from_piece(piece: Optional[Piece]) -> str:
-    return "." if piece is None else piece.symbol
+    return "." if piece is None else piece.symbol  # return "." if no piece, otherwise return the piece's symbol
