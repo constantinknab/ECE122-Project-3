@@ -1,13 +1,3 @@
-"""
-ECE 122: Project 3
-Sean Graziano
-Spire ID: 35297651
-Constanin Knab
-Spire ID: 35452627
-"""
-
-#Stores board, applies move, undo moves, check legal, serializez board state
-
 from __future__ import annotations
 
 from typing import List, Optional, Tuple
@@ -26,6 +16,17 @@ from pieces import (
     piece_from_symbol,
     symbol_from_piece,
 )
+"""
+ECE 122: Project 3
+Sean Graziano
+Spire ID: 35297651
+Constanin Knab
+Spire ID: 35452627
+"""
+
+#Stores board, applies move, undo moves, check legal, serializez board state
+
+
 
 Square = Tuple[int, int]
 
@@ -343,8 +344,7 @@ class Board:
             cells = []
             for c in range(8):
                 p = self.grid[r][c]
-                cells.append(f" {symbol_from_piece(p)} ") 
-                cells.append(f" {symbol_from_piece(p)} ")           
+                cells.append(f" {symbol_from_piece(p)} ")
             out.append(f"{rank} |" + "|".join(cells) + f"| {rank}") # Add the rank number on both sides of the row for better readability
             out.append("  +---+---+---+---+---+---+---+---+")       # Add a separator line after each row for better readability
         out.append("    a   b   c   d   e   f   g   h")             # Add the file letters at the bottom for better readability
@@ -374,7 +374,7 @@ class Board:
         """
         starting_pos = text[:2]
         ending_pos = text[2:4]
-        promotion = text[4] if len(text) > 4 else None
+        promotion = text[4].lower() if len(text) > 4 else None
         src = parse_square(starting_pos)    # Convert the starting position from chess notation (e.g., "e2") to array indices (e.g., (6, 4))
         dst = parse_square(ending_pos)      # Convert the starting and ending positions from chess notation (e.g., "e2") to array indices (e.g., (6, 4))
         move = Move(src=src, dst=dst, promotion=promotion)

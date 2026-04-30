@@ -1,3 +1,9 @@
+from __future__ import annotations
+from dataclasses import dataclass#dataclass lets us define Move with minimal boilerplate.
+from typing import List, Optional, Tuple, TYPE_CHECKING
+import board
+if TYPE_CHECKING:
+    from board import Board
 """
 ECE 122: Project 3
 Sean Graziano
@@ -10,21 +16,16 @@ Spire ID: 35452627
 moves, the piece base class, the individual piece types.
 """
 
-from __future__ import annotations
 
-import board
 """This delays evaluation of type hints until runtime is finished. 
 It is useful because later in the file, Move refers to Piece, and 
 Piece refers to Board, if you don't have this, it'd create forward-reference issues.
 """
-from dataclasses import dataclass#dataclass lets us define Move with minimal boilerplate.
 
-from typing import List, Optional, Tuple, TYPE_CHECKING
 #List, Optional, Tuple are type annotations.
 #TYPE_CHECKING is being used to avoid circular imports at runtime.
 
-if TYPE_CHECKING:
-    from board import Board
+
 #This import is only used by static type checkers. prevents circular import problem 
 # between pieces.py and board.py.
 

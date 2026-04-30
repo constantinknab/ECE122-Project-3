@@ -1,3 +1,5 @@
+from __future__ import annotations
+from board import Board
 """
 ECE 122: Project 3
 Sean Graziano
@@ -7,9 +9,7 @@ Spire ID: 35452627
 """
 
 #Used to evaluate board pos numerically
-from __future__ import annotations
 
-from board import Board
 #piece value
 PIECE_VALUES = {
     "P": 100,
